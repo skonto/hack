@@ -124,6 +124,7 @@ function generate-knative() {
 
 # Cleanup after generating code
 function cleanup-codegen() {
+  set -xe
   restore-changes-if-its-copyright-year-only
   restore-gopath
 }
@@ -136,12 +137,15 @@ function restore-changes-if-its-copyright-year-only() {
   git diff --exit-code --name-only > "$difflist"
   # list git changes and skip those which differ only in the boilerplate year
   while read -r file; do
+    log "1"
+    log "$file"
     # check if the file contains just the change in the boilerplate year
     if [ "$(LANG=C git diff --exit-code --shortstat -- "$file")" = ' 1 file changed, 1 insertion(+), 1 deletion(-)' ] && \
         [[ "$(git diff --exit-code -U1 -- "$file" | grep -Ec '^[+-]\s*[*#]?\s*Copyright 2[0-9]{3}')" -eq 2 ]]; then
       # restore changes to that file
       git checkout -- "$file"
     fi
+    log "2"
   done < "$difflist"
   rm -f "$difflist"
 }
